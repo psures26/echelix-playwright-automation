@@ -1,0 +1,29 @@
+{
+  "name": "echelix-playwright-automation",
+  "version": "1.0.0",
+  "description": "Playwright end-to-end test automation framework for Echelix - covering API, Email, and UI validation",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:report": "npx playwright show-report",
+    "test:debug": "npx playwright test --debug"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "googleapis": "^144.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.1",
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  },
+  "keywords": [
+    "playwright",
+    "automation",
+    "testing",
+    "e2e",
+    "typescript"
+  ],
+  "author": "psures26",
+  "license": "MIT"
+}
