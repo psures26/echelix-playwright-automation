@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Echelix Test App</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+    }
+    .navbar {
+      background: #4CAF50;
+      color: white;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .navbar h2 { font-size: 20px; }
+    .navbar .user-info { font-size: 14px; opacity: 0.9; }
+    .logout-btn {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.4);
+      padding: 6px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 16px;
+    }
+    .logout-btn:hover { background: rgba(255,255,255,0.3); }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 24px;
+    }
+    .welcome-card {
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .welcome-card h1 {
+      color: #333;
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+    .welcome-card p { color: #666; font-size: 16px; }
+    .dashboard-heading {
+      color: #333;
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .stat-card {
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    .stat-card .number {
+      font-size: 36px;
+      font-weight: bold;
+      color: #4CAF50;
+    }
+    .stat-card .label {
+      color: #666;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    .success-badge {
+      display: inline-block;
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <h2>Echelix Test App</h2>
+    <div style="display: flex; align-items: center;">
+      <span class="user-info" id="navUsername">Welcome!</span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="welcome-card">
+      <h1 id="welcomeHeading">Dashboard</h1>
+      <p>You have successfully logged in to the Echelix Test Application.</p>
+      <span class="success-badge">✅ Login Successful</span>
+    </div>
+
+    <h2 class="dashboard-heading">Overview</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="number">3</div>
+        <div class="label">Tests Passed</div>
+      </div>
+      <div class="stat-card">
+        <div class="number">1</div>
+        <div class="label">Workflows Completed</div>
+      </div>
+      <div class="stat-card">
+        <div class="number">100%</div>
+        <div class="label">Success Rate</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Display the logged-in username
+    const username = sessionStorage.getItem('loggedInUser') || 'User';
+    document.getElementById('navUsername').textContent = `Welcome, ${username}!`;
+    document.getElementById('welcomeHeading').textContent = `Welcome, ${username}!`;
+
+    function logout() {
+      sessionStorage.removeItem('loggedInUser');
+      window.location.href = '/login';
+    }
+  </script>
+</body>
+</html>

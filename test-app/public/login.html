@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Echelix Test App</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+    h1 { color: #333; margin-bottom: 8px; font-size: 24px; }
+    .subtitle { color: #666; margin-bottom: 28px; font-size: 14px; }
+    label { display: block; margin-bottom: 6px; font-weight: bold; color: #444; font-size: 14px; }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-bottom: 18px;
+      transition: border-color 0.2s;
+    }
+    input:focus { outline: none; border-color: #4CAF50; }
+    button[type="submit"] {
+      width: 100%;
+      padding: 12px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button[type="submit"]:hover { background: #45a049; }
+    .error-message {
+      background: #ffebee;
+      color: #c62828;
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: none;
+    }
+    .forgot-link {
+      display: block;
+      text-align: center;
+      margin-top: 16px;
+      color: #4CAF50;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .forgot-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Sign In</h1>
+    <p class="subtitle">Echelix Test Application</p>
+
+    <div class="error-message" id="errorMessage">
+      Invalid username or password. Please try again.
+    </div>
+
+    <form id="loginForm">
+      <label for="username">Username</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        placeholder="Enter your username"
+        autocomplete="username"
+        required
+      />
+
+      <label for="password">Password</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="Enter your password"
+        autocomplete="current-password"
+        required
+      />
+
+      <button type="submit" id="loginButton">Login</button>
+    </form>
+
+    <a href="/reset" class="forgot-link" id="forgotPasswordLink">Forgot your password?</a>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const errorEl = document.getElementById('errorMessage');
+
+      errorEl.style.display = 'none';
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          // Store username for dashboard display
+          sessionStorage.setItem('loggedInUser', username);
+          window.location.href = '/dashboard';
+        } else {
+          errorEl.style.display = 'block';
+        }
+      } catch (err) {
+        errorEl.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

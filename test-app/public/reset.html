@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Password — Echelix Test App</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+    h1 { color: #333; margin-bottom: 8px; font-size: 24px; }
+    .subtitle { color: #666; margin-bottom: 28px; font-size: 14px; }
+    label { display: block; margin-bottom: 6px; font-weight: bold; color: #444; font-size: 14px; }
+    input[type="password"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-bottom: 18px;
+      transition: border-color 0.2s;
+    }
+    input:focus { outline: none; border-color: #4CAF50; }
+    button[type="submit"] {
+      width: 100%;
+      padding: 12px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button[type="submit"]:hover { background: #45a049; }
+    .error-message {
+      background: #ffebee;
+      color: #c62828;
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: none;
+    }
+    .success-message {
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: none;
+    }
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 16px;
+      color: #4CAF50;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Reset Password</h1>
+    <p class="subtitle">Enter your new password below</p>
+
+    <div class="error-message" id="errorMessage"></div>
+    <div class="success-message" id="successMessage">
+      Password reset successfully! Redirecting to login...
+    </div>
+
+    <form id="resetForm">
+      <label for="newPassword">New Password</label>
+      <input
+        type="password"
+        id="newPassword"
+        name="newPassword"
+        placeholder="Enter new password"
+        autocomplete="new-password"
+        required
+      />
+
+      <label for="confirmPassword">Confirm Password</label>
+      <input
+        type="password"
+        id="confirmPassword"
+        name="confirmPassword"
+        placeholder="Confirm new password"
+        autocomplete="new-password"
+        required
+      />
+
+      <button type="submit" id="saveButton">Save New Password</button>
+    </form>
+
+    <a href="/login" class="back-link">Back to Login</a>
+  </div>
+
+  <script>
+    // Extract token from URL query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+
+    document.getElementById('resetForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const errorEl = document.getElementById('errorMessage');
+      const successEl = document.getElementById('successMessage');
+
+      errorEl.style.display = 'none';
+      successEl.style.display = 'none';
+
+      // Validate passwords match
+      if (newPassword !== confirmPassword) {
+        errorEl.textContent = 'Passwords do not match. Please try again.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      if (!token) {
+        errorEl.textContent = 'Invalid or missing reset token.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/reset-password/confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, newPassword }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          successEl.style.display = 'block';
+          // Redirect to login after 2 seconds
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 2000);
+        } else {
+          errorEl.textContent = data.message || 'Failed to reset password. Please try again.';
+          errorEl.style.display = 'block';
+        }
+      } catch (err) {
+        errorEl.textContent = 'An error occurred. Please try again.';
+        errorEl.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
