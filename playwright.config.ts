@@ -28,8 +28,8 @@ export default defineConfig({
 
   // Global test settings
   use: {
-    // Base URL for OrangeHRM demo application
-    baseURL: process.env.BASE_URL || 'https://opensource-demo.orangehrmlive.com',
+    // Base URL for the Echelix Test App (local Express server)
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
 
     // Collect trace on first retry
     trace: 'on-first-retry',

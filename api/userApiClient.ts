@@ -3,9 +3,9 @@ import { APIRequestContext, APIResponse, expect } from '@playwright/test';
 /**
  * UserApiClient
  *
- * Handles all user-related API operations.
+ * Handles all user-related API operations against the Echelix Test App.
  * Responsibilities:
- * - Trigger password reset via POST /api/users/reset-password
+ * - Trigger password reset via POST /api/reset-password
  * - Validate API response status codes
  * - Validate response payload structure
  */
@@ -15,12 +15,16 @@ export class UserApiClient {
 
   constructor(request: APIRequestContext, baseURL?: string) {
     this.request = request;
-    this.baseURL = baseURL || process.env.BASE_URL || 'https://opensource-demo.orangehrmlive.com';
+    this.baseURL = baseURL || process.env.BASE_URL || 'http://localhost:3000';
   }
 
   /**
    * Sends a password reset request for the given username.
-   * Makes a POST request to the OrangeHRM password reset endpoint.
+   * Makes a POST request to the Echelix Test App password reset endpoint.
+   *
+   * POST /api/reset-password
+   * Body: { username: "testuser" }
+   * Response: { success: true, message: "Password reset email sent successfully" }
    *
    * @param username - The username to request a password reset for
    * @returns APIResponse from the server
@@ -29,14 +33,12 @@ export class UserApiClient {
     console.log(`[UserApiClient] Triggering password reset for: ${username}`);
 
     const response = await this.request.post(
-      `${this.baseURL}/web/index.php/auth/sendPasswordReset`,
+      `${this.baseURL}/api/reset-password`,
       {
-        form: {
-          username: username,
-        },
+        data: { username },
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          Accept: 'application/json, text/plain, */*',
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
         },
       }
     );
@@ -47,7 +49,7 @@ export class UserApiClient {
 
   /**
    * Validates the HTTP status code of the password reset response.
-   * Accepts 200 (OK), 201 (Created), or 302 (Redirect after form submit).
+   * Accepts 200 (OK) — the Echelix Test App returns 200 on success.
    *
    * @param response - The API response to validate
    */
@@ -55,19 +57,17 @@ export class UserApiClient {
     const status = response.status();
     console.log(`[UserApiClient] Validating response status: ${status}`);
 
-    const isValidStatus = status === 200 || status === 201 || status === 302;
-
     expect(
-      isValidStatus,
-      `Expected a successful response (200/201/302) but received: ${status}`
-    ).toBeTruthy();
+      status,
+      `Expected a successful response (200) but received: ${status}`
+    ).toBe(200);
 
     console.log(`[UserApiClient] ✅ Response status ${status} is valid`);
   }
 
   /**
    * Validates and returns the response payload.
-   * Handles both JSON and plain text responses.
+   * Verifies the response contains success: true and a message.
    *
    * @param response - The API response to parse
    * @returns Parsed response body as a record
@@ -75,18 +75,13 @@ export class UserApiClient {
   async validateResponsePayload(
     response: APIResponse
   ): Promise<Record<string, unknown>> {
-    const contentType = response.headers()['content-type'] || '';
+    const body = (await response.json()) as Record<string, unknown>;
+    console.log(`[UserApiClient] Response payload:`, JSON.stringify(body, null, 2));
 
-    if (contentType.includes('application/json')) {
-      const body = (await response.json()) as Record<string, unknown>;
-      console.log(`[UserApiClient] JSON payload:`, JSON.stringify(body, null, 2));
-      expect(body).toBeDefined();
-      return body;
-    }
+    expect(body).toBeDefined();
+    expect(body.success).toBe(true);
+    expect(body.message).toBeTruthy();
 
-    const text = await response.text();
-    console.log(`[UserApiClient] Text payload (first 200 chars): ${text.substring(0, 200)}`);
-    expect(text).toBeDefined();
-    return { rawText: text };
+    return body;
   }
 }
