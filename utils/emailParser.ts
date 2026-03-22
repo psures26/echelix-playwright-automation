@@ -2,10 +2,6 @@
  * EmailParser
  *
  * Utility for parsing email content.
- * Responsibilities:
- * - Extract password reset links from email body (HTML or plain text)
- * - Decode HTML entities in URLs
- * - Validate extracted URLs
  */
 export class EmailParser {
   /**
@@ -17,7 +13,6 @@ export class EmailParser {
    * @throws Error if no reset link is found
    */
   extractPasswordResetLink(emailBody: string): string {
-    console.log('[EmailParser] Attempting to extract password reset link...');
 
     const resetLink =
       this.extractFromHtmlHref(emailBody) ||
@@ -25,17 +20,12 @@ export class EmailParser {
       this.extractFromGenericUrl(emailBody);
 
     if (!resetLink) {
-      console.error(
-        '[EmailParser] Email body preview (first 500 chars):',
-        emailBody.substring(0, 500)
-      );
       throw new Error(
         '[EmailParser] Could not find a password reset link in the email body. ' +
           'Check the email content and update the extraction patterns if needed.'
       );
     }
 
-    console.log(`[EmailParser] ✅ Reset link extracted: ${resetLink}`);
     return resetLink;
   }
 
@@ -59,7 +49,6 @@ export class EmailParser {
     if (matches.length > 0) {
       const url = matches[0][1];
       const decoded = this.decodeHtmlEntities(url);
-      console.log(`[EmailParser] Found href URL: ${decoded}`);
       return decoded;
     }
 
@@ -84,7 +73,6 @@ export class EmailParser {
 
     if (match) {
       const url = match[1].trim();
-      console.log(`[EmailParser] Found plain text URL: ${url}`);
       return url;
     }
 
@@ -110,7 +98,6 @@ export class EmailParser {
     if (matches.length > 0) {
       // Remove trailing punctuation that may have been captured
       const url = matches[0][0].replace(/[.,;)]+$/, '');
-      console.log(`[EmailParser] Found generic URL: ${url}`);
       return url;
     }
 

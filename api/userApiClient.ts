@@ -30,7 +30,6 @@ export class UserApiClient {
    * @returns APIResponse from the server
    */
   async triggerPasswordReset(username: string): Promise<APIResponse> {
-    console.log(`[UserApiClient] Triggering password reset for: ${username}`);
 
     const response = await this.request.post(
       `${this.baseURL}/api/reset-password`,
@@ -43,7 +42,6 @@ export class UserApiClient {
       }
     );
 
-    console.log(`[UserApiClient] Response status: ${response.status()}`);
     return response;
   }
 
@@ -55,14 +53,12 @@ export class UserApiClient {
    */
   async validatePasswordResetResponse(response: APIResponse): Promise<void> {
     const status = response.status();
-    console.log(`[UserApiClient] Validating response status: ${status}`);
 
     expect(
       status,
       `Expected a successful response (200) but received: ${status}`
     ).toBe(200);
 
-    console.log(`[UserApiClient] ✅ Response status ${status} is valid`);
   }
 
   /**
@@ -76,7 +72,6 @@ export class UserApiClient {
     response: APIResponse
   ): Promise<Record<string, unknown>> {
     const body = (await response.json()) as Record<string, unknown>;
-    console.log(`[UserApiClient] Response payload:`, JSON.stringify(body, null, 2));
 
     expect(body).toBeDefined();
     expect(body.success).toBe(true);

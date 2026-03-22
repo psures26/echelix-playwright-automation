@@ -32,14 +32,12 @@ export class GmailService {
     this.maxRetries = maxRetries;
     this.retryIntervalMs = retryIntervalMs;
 
-    // Initialize OAuth2 client using environment variables
     this.oauth2Client = new google.auth.OAuth2(
       process.env.GMAIL_CLIENT_ID,
       process.env.GMAIL_CLIENT_SECRET,
       process.env.GMAIL_REDIRECT_URI || 'urn:ietf:wg:oauth:2.0:oob'
     );
 
-    // Set the refresh token so the client can auto-refresh access tokens
     this.oauth2Client.setCredentials({
       refresh_token: process.env.GMAIL_REFRESH_TOKEN,
     });
@@ -58,22 +56,12 @@ export class GmailService {
     subjectFilter: string,
     afterTimestamp: number
   ): Promise<GmailMessage> {
-    console.log(`[GmailService] Polling inbox for subject: "${subjectFilter}"`);
-    console.log(
-      `[GmailService] Looking for emails after: ${new Date(afterTimestamp).toISOString()}`
-    );
 
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
-      console.log(
-        `[GmailService] Attempt ${attempt}/${this.maxRetries} - checking inbox...`
-      );
 
       try {
         const message = await this.findEmail(subjectFilter, afterTimestamp);
         if (message) {
-          console.log(
-            `[GmailService] ✅ Email found on attempt ${attempt}: "${message.subject}"`
-          );
           return message;
         }
       } catch (error) {
@@ -81,9 +69,6 @@ export class GmailService {
       }
 
       if (attempt < this.maxRetries) {
-        console.log(
-          `[GmailService] Email not found. Waiting ${this.retryIntervalMs / 1000}s before retry...`
-        );
         await this.sleep(this.retryIntervalMs);
       }
     }
@@ -107,12 +92,9 @@ export class GmailService {
   ): Promise<GmailMessage | null> {
     const gmail = google.gmail({ version: 'v1', auth: this.oauth2Client });
 
-    // Convert ms timestamp to seconds for Gmail query
     const afterSeconds = Math.floor(afterTimestamp / 1000);
 
-    // Gmail search query: subject filter + time filter
     const query = `subject:"${subjectFilter}" after:${afterSeconds}`;
-    console.log(`[GmailService] Search query: ${query}`);
 
     const listResponse = await gmail.users.messages.list({
       userId: 'me',
@@ -122,13 +104,11 @@ export class GmailService {
 
     const messages = listResponse.data.messages;
     if (!messages || messages.length === 0) {
-      console.log(`[GmailService] No messages found matching query`);
       return null;
     }
 
     // Get the most recent matching message (first in list)
     const messageId = messages[0].id!;
-    console.log(`[GmailService] Found message ID: ${messageId}`);
 
     const messageResponse = await gmail.users.messages.get({
       userId: 'me',
@@ -168,8 +148,6 @@ export class GmailService {
     // Extract and decode the email body
     const body = this.extractEmailBody(rawMessage.payload);
 
-    console.log(`[GmailService] Parsed email - Subject: "${subject}", From: "${from}"`);
-
     return {
       id: rawMessage.id || '',
       subject,
@@ -196,9 +174,7 @@ export class GmailService {
       return Buffer.from(payload.body.data, 'base64').toString('utf-8');
     }
 
-    // Multipart message: search through parts
     if (payload.parts && Array.isArray(payload.parts)) {
-      // Prefer HTML part (contains clickable links)
       const htmlPart = payload.parts.find(
         (p: { mimeType: string }) => p.mimeType === 'text/html'
       );
@@ -214,7 +190,6 @@ export class GmailService {
         return Buffer.from(textPart.body.data, 'base64').toString('utf-8');
       }
 
-      // Recursively check nested parts (e.g. multipart/mixed containing multipart/alternative)
       for (const part of payload.parts) {
         const body = this.extractEmailBody(part);
         if (body) return body;
